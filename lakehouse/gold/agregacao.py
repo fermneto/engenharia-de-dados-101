@@ -67,16 +67,35 @@ def salvar_csv(registros: list[dict], caminho_saida: Path, colunas: list[str]) -
 
 
 def calcular_resumo_por_categoria(vendas: list[dict], produtos: list[dict]) -> list[dict]:
-    """Uma linha por categoria: quantidade_vendida e valor_total somados."""
-    # TODO: implemente
-    raise NotImplementedError("Implemente calcular_resumo_por_categoria()")
+    resumo = defaultdict(lambda: {"quantidade": 0, "valor_total": 0.0})
+
+    for venda in vendas:
+        id_produto = venda["id_produto"]
+        quantidade = int(venda["quantidade"])
+        valor_total = float(venda["valor_total"])
+
+        #tive que usar IA nessa funcao next pra buscar os mesmos produtos
+        produto = next((p for p in produtos if p["id_produto"] == id_produto), None)
+        if not produto:
+            continue
+
+        categoria = produto["categoria"]
+        resumo[categoria]["quantidade"] += quantidade
+        resumo[categoria]["valor_total"] += valor_total
+
+    return [{"categoria": cat, "quantidade_vendida": info["quantidade"], "valor_total": info["valor_total"]} for cat, info in resumo.items()]
 
 
 def calcular_vendas_por_mes(vendas: list[dict]) -> list[dict]:
-    """Uma linha por mês (AAAA-MM): quantidade_vendas e valor_total somados."""
-    # TODO: implemente
-    raise NotImplementedError("Implemente calcular_vendas_por_mes()")
+    resumo = defaultdict(lambda: {"quantidade_vendas":0, "valor_total":0.0})
 
+    for venda in vendas:
+        data_venda = venda["data_venda"]
+        mes = data_venda[:7] 
+        resumo[mes]["quantidade_vendas"] += 1
+        resumo[mes]["valor_total"] += float(venda["valor_total"])
+
+    return [{"mes": mes, "quantidade_vendas": info["quantidade_vendas"], "valor_total": info["valor_total"]} for mes, info in resumo.items()]
 
 def calcular_top_clientes(vendas: list[dict], clientes: list[dict], top_n: int = 10) -> list[dict]:
     """Os top_n clientes que mais gastaram, ordenados do maior para o menor."""
