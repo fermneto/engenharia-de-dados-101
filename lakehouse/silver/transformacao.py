@@ -149,13 +149,57 @@ def limpar_produtos(bronze: list[dict]) -> list[dict]:
 
     return list(produtos.values())
 def limpar_vendas(bronze: list[dict], ids_clientes_validos: set[int], ids_produtos_validos: set[int]) -> list[dict]:
-    """
-    Aplica as regras de limpeza de vendas descritas no topo do arquivo,
-    incluindo o filtro de integridade referencial contra clientes/produtos
-    já limpos.
-    """
-    # TODO: implemente a limpeza de vendas
-    raise NotImplementedError("Implemente limpar_vendas()")
+    vendas: dict[int, dict] = {}
+
+    for registro in bronze:
+        try:
+            id_venda = int(str(registro.get("id_venda", "")).strip())
+            id_cliente = int(str(registro.get("id_cliente", "")).strip())
+            id_produto = int(str(registro.get("id_produto", "")).strip())
+            quantidade = int(str(registro.get("quantidade", "")).strip())
+            valor_total_str = str(registro.get("valor_total", "")).strip().replace(",", ".")
+            data_venda = str(registro.get("data_venda", "")).strip()
+        except (TypeError, ValueError):
+            continue
+
+        if quantidade <= 0:
+            continue
+
+        try:
+            valor_total = float(valor_total_str)
+        except (TypeError, ValueError):
+            continue
+
+        if id_venda in vendas:
+            continue
+
+        if id_cliente not in ids_clientes_validos or id_produto not in ids_produtos_validos:
+            continue
+        data_venda_formatada = None
+        if "-" in data_venda:
+            try:
+                data_venda_formatada = data_venda
+            except ValueError:
+                continue
+        elif "/" in data_venda:
+            try:
+                dia, mes, ano = map(int, data_venda.split("/"))
+                data_venda_formatada = f"{ano:04d}-{mes:02d}-{dia:02d}"
+            except ValueError:
+                continue
+        else:
+            continue
+        venda_limpa = {
+            "id_venda": id_venda,
+            "id_cliente": id_cliente,
+            "id_produto": id_produto,
+            "quantidade": quantidade,
+            "data_venda": data_venda_formatada,
+            "valor_total": valor_total,
+        }
+        vendas[id_venda] = venda_limpa
+
+    return list(vendas.values())
 
 
 def main() -> None:
