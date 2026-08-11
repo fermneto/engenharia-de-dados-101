@@ -48,12 +48,6 @@ DT_INGESTAO = datetime.now(timezone.utc).isoformat()
 
 
 def ler_vendas_csv() -> list[dict]:
-    """
-    Lê lakehouse/landing/vendas.csv e devolve uma lista de dicionários, um por linha,
-    EXATAMENTE como está no arquivo (não converta tipos, não filtre nada).
-
-    Dica: use csv.DictReader.
-    """
     try:
         with open(LANDING / "vendas.csv", "r", encoding="utf-8") as arquivo:
             leitor = csv.DictReader(arquivo)
@@ -63,17 +57,11 @@ def ler_vendas_csv() -> list[dict]:
 
 
 def ler_clientes_json() -> list[dict]:
-    """
-    Lê lakehouse/landing/clientes.json e devolve a lista de dicionários já presente
-    no arquivo. Alguns registros podem ter campos faltando (ex.: sem
-    "data_cadastro") ou campos extras (ex.: "telefone") -- não se preocupe
-    com isso agora, apenas carregue o JSON como ele é.
-
-    Dica: use json.load(). Repare que nem todo registro tem as mesmas
-    chaves -- isso é esperado na bronze.
-    """
-    # TODO: implemente a leitura do arquivo lakehouse/landing/clientes.json
-    raise NotImplementedError("Implemente ler_clientes_json()")
+    try:
+        with open(LANDING / "clientes.json", "r", encoding = "utf-8") as arquivo:
+            return json.load(arquivo)
+    except FileNotFoundError:
+        raise FileNotFoundError("O arquivo lakehouse/landing/clientes.json não foi encontrado.")
 
 
 def ler_produtos_txt() -> list[dict]:
