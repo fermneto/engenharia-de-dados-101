@@ -1,48 +1,3 @@
-"""
-agregacao.py - Camada GOLD
-============================
-
-OBJETIVO DESTA CAMADA
-----------------------
-A camada gold entrega dados prontos para consumo de negócio: agregações,
-métricas, coisas que alguém da área comercial ia querer olhar num
-dashboard. Aqui você não lê mais a landing nem a bronze -- só a silver,
-que já está limpa.
-
-Entrada:  lakehouse/silver/saida/*.csv
-Saída:    lakehouse/gold/saida/resumo_vendas_categoria.csv
-          lakehouse/gold/saida/vendas_por_mes.csv
-          lakehouse/gold/saida/top_clientes.csv
-          lakehouse/gold/saida/resumo_geral.csv
-
-O que cada arquivo de saída deve conter:
-
-  resumo_vendas_categoria.csv
-      colunas: categoria, quantidade_vendida, valor_total
-      -> uma linha por categoria de produto (junte vendas com produtos
-         pelo id_produto), somando quantidade e valor_total.
-
-  vendas_por_mes.csv
-      colunas: mes, quantidade_vendas, valor_total
-      -> uma linha por mês (formato "AAAA-MM", extraído de data_venda),
-         com o número de vendas (linhas) e a soma de valor_total.
-
-  top_clientes.csv
-      colunas: id_cliente, nome, valor_total
-      -> os 10 clientes que mais gastaram (junte vendas com clientes),
-         ORDENADOS do maior para o menor valor_total.
-
-  resumo_geral.csv
-      colunas: total_vendas, valor_total_geral, ticket_medio
-      -> UMA única linha com: número total de vendas, soma de todos os
-         valor_total, e o ticket médio (valor_total_geral / total_vendas,
-         arredondado para 2 casas decimais).
-
-Dica: como não usamos pandas, some e agrupe "na mão" com dicionários,
-por exemplo: um dict {categoria: {"quantidade": 0, "valor_total": 0.0}}
-que você vai incrementando conforme percorre as vendas.
-"""
-
 import csv
 from collections import defaultdict
 from pathlib import Path
@@ -67,6 +22,7 @@ def salvar_csv(registros: list[dict], caminho_saida: Path, colunas: list[str]) -
 
 
 def calcular_resumo_por_categoria(vendas: list[dict], produtos: list[dict]) -> list[dict]:
+    #Join na lista de vendas e produtos, calcula a soma por categoria
     resumo = defaultdict(lambda: {"quantidade": 0, "valor_total": 0.0})
 
     for venda in vendas:
@@ -87,6 +43,7 @@ def calcular_resumo_por_categoria(vendas: list[dict], produtos: list[dict]) -> l
 
 
 def calcular_vendas_por_mes(vendas: list[dict]) -> list[dict]:
+    #Calcula a quantidade de vendas e o valor total por mês
     resumo = defaultdict(lambda: {"quantidade_vendas":0, "valor_total":0.0})
 
     for venda in vendas:
@@ -98,11 +55,7 @@ def calcular_vendas_por_mes(vendas: list[dict]) -> list[dict]:
     return [{"mes": mes, "quantidade_vendas": info["quantidade_vendas"], "valor_total": info["valor_total"]} for mes, info in resumo.items()]
 
 def calcular_top_clientes(vendas: list[dict], clientes: list[dict], top_n: int = 10) -> list[dict]:
-    """Os top_n clientes que mais gastaram, ordenados do maior para o menor.
-      top_clientes.csv
-      colunas: id_cliente, nome, valor_total
-      -> os 10 clientes que mais gastaram (junte vendas com clientes),
-         ORDENADOS do maior para o menor valor_total."""
+    #Calcula os top N clientes por valor total de compras
     top_n = 10
     resumo = defaultdict(float)
     for venda in vendas:
@@ -117,6 +70,7 @@ def calcular_top_clientes(vendas: list[dict], clientes: list[dict], top_n: int =
 
 
 def calcular_resumo_geral(vendas: list[dict]) -> list[dict]:
+    #Retorna resumo de valores gerais
     total_vendas = len(vendas)
     valor_total_geral = sum(float(venda["valor_total"]) for venda in vendas)
     ticket_medio = round(valor_total_geral / total_vendas, 2) if total_vendas > 0 else 0.0
