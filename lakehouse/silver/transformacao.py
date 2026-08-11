@@ -111,13 +111,43 @@ def limpar_clientes(bronze: list[dict]) -> list[dict]:
 
 
 def limpar_produtos(bronze: list[dict]) -> list[dict]:
-    """
-    Aplica as regras de limpeza de produtos descritas no topo do arquivo.
-    """
-    # TODO: implemente a limpeza de produtos
-    raise NotImplementedError("Implemente limpar_produtos()")
+    produtos: dict[int, dict] = {}
 
+    for registro in bronze:
+        try:
+            id_produto = int(str(registro.get("id_produto", "")).strip())
+        except (TypeError, ValueError):
+            continue
 
+        if id_produto in produtos:
+            continue
+
+        preco_str = str(registro.get("preco", "")).strip().replace(",", ".")
+        try:
+            preco = float(preco_str)
+        except (TypeError, ValueError):
+            continue
+
+        categoria = str(registro.get("categoria", "")).strip()
+        categoria_normalizada = next(
+            (cat for cat in CATEGORIAS_VALIDAS if cat.lower() == categoria.lower()), None)
+        if categoria_normalizada is None:
+            continue
+
+        ativo_str = str(registro.get("ativo", "")).strip().lower()
+        ativo = 1 if ativo_str in {"sim", "1"} else 0
+
+        produto_limpo = {
+            "id_produto": id_produto,
+            "nome": str(registro.get("nome", "")).strip(),
+            "categoria": categoria_normalizada,
+            "preco": preco,
+            "ativo": ativo,
+        }
+
+        produtos[id_produto] = produto_limpo
+
+    return list(produtos.values())
 def limpar_vendas(bronze: list[dict], ids_clientes_validos: set[int], ids_produtos_validos: set[int]) -> list[dict]:
     """
     Aplica as regras de limpeza de vendas descritas no topo do arquivo,
