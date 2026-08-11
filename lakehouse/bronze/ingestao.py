@@ -54,8 +54,12 @@ def ler_vendas_csv() -> list[dict]:
 
     Dica: use csv.DictReader.
     """
-    # TODO: implemente a leitura do arquivo lakehouse/landing/vendas.csv
-    raise NotImplementedError("Implemente ler_vendas_csv()")
+    try:
+        with open(LANDING / "vendas.csv", "r", encoding="utf-8") as arquivo:
+            leitor = csv.DictReader(arquivo)
+            return list(leitor)
+    except FileNotFoundError:
+        raise FileNotFoundError("O arquivo lakehouse/landing/vendas.csv não foi encontrado.")
 
 
 def ler_clientes_json() -> list[dict]:
