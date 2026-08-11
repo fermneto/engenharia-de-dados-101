@@ -67,18 +67,27 @@ def ler_clientes_json() -> list[dict]:
 def ler_produtos_txt() -> list[dict]:
     try:
         with open(LANDING / "produtos.txt", "r", encoding="utf-8") as arquivo:
-            linhas = arquivo.readlines()
-            for i, linha in enumerate(linhas):
-                linha = linha.strip()
-                if not linha or linha.startswith("#"):
+            cabecalho = None
+            registros = []
+
+            for linha in arquivo:
+                linha_limpa = linha.strip()
+                if not linha_limpa or linha_limpa.startswith("#"):
                     continue
-                if i == 0:
-                    cabecalho = linha.split("|")
-                    registros = []
-                else:
-                    valores = linha.split("|")
-                    registro = dict(zip(cabecalho, valores))
-                    registros.append(registro)
+
+                valores = [campo.strip() for campo in linha_limpa.split("|")]
+
+                if cabecalho is None:
+                    cabecalho = valores
+                    continue
+
+                if len(valores) != len(cabecalho):
+                    continue
+
+                registro = dict(zip(cabecalho, valores))
+                registros.append(registro)
+
+            return registros
 
     except FileNotFoundError:
         raise FileNotFoundError("O arquivo lakehouse/landing/produtos.txt não foi encontrado.")
