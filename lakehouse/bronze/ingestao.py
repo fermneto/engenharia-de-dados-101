@@ -10,26 +10,26 @@ DT_INGESTAO = datetime.now(timezone.utc).isoformat()
 
 
 def ler_vendas_csv() -> list[dict]:
-    #Lê o arquivo CSV de vendas e retorna uma lista de dicionários, onde cada dicionário representa uma linha do arquivo.
+    #Lê o arquivo CSV de vendas e retorna uma lista de dicionários.
     try:
         with open(LANDING / "vendas.csv", "r", encoding="utf-8") as arquivo:
             leitor = csv.DictReader(arquivo)
             return list(leitor)
     except FileNotFoundError:
-        raise FileNotFoundError("O arquivo lakehouse/landing/vendas.csv não foi encontrado.")
+        raise FileNotFoundError("O arquivo vendas.csv não foi encontrado.")
 
 
 def ler_clientes_json() -> list[dict]:
-    #Lê o arquivo JSON de clientes e retorna uma lista de dicionários, onde cada dicionário representa um cliente.
+    #Lê o arquivo JSON de clientes e retorna uma lista de dicionários.
     try:
         with open(LANDING / "clientes.json", "r", encoding = "utf-8") as arquivo:
             return json.load(arquivo)
     except FileNotFoundError:
-        raise FileNotFoundError("O arquivo lakehouse/landing/clientes.json não foi encontrado.")
+        raise FileNotFoundError("O arquivo clientes.json não foi encontrado.")
 
 
 def ler_produtos_txt() -> list[dict]:
-    #Lê o arquivo de texto de produtos e retorna uma lista de dicionários, onde cada dicionário representa um produto.
+    #Lê o arquivo de texto de produtos e retorna uma lista de dicionários.
     try:
         with open(LANDING / "produtos.txt", "r", encoding="utf-8") as arquivo:
             cabecalho = None
@@ -55,7 +55,7 @@ def ler_produtos_txt() -> list[dict]:
             return registros
 
     except FileNotFoundError:
-        raise FileNotFoundError("O arquivo lakehouse/landing/produtos.txt não foi encontrado.")
+        raise FileNotFoundError("O arquivo produtos.txt não foi encontrado.")
 
 def adicionar_metadados(registros: list[dict], nome_arquivo: str) -> list[dict]:
     """Acrescenta as colunas arquivo_origem e dt_ingestao a cada registro."""
