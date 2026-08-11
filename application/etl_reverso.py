@@ -62,34 +62,21 @@ def ler_csv_gold(nome_tabela: str) -> list[dict]:
 
 
 def criar_tabela(conexao: sqlite3.Connection, nome_tabela: str, colunas: list[str]) -> None:
-    """
-    Cria (ou recria) a tabela `nome_tabela` no banco, com uma coluna para
-    cada nome em `colunas` -- sem se preocupar com tipos: o SQLite é
-    dinamicamente tipado, então uma coluna sem tipo declarado aceita
-    qualquer valor.
-
-    Dica: DROP TABLE IF EXISTS antes de criar, para o script poder ser
-    rodado várias vezes sem dar erro de "tabela já existe". Os nomes das
-    colunas podem ser inseridos direto na string do SQL (não dá pra usar
-    parâmetro `?` para nomes de coluna, só para valores).
-    """
-    # TODO: implemente a criação da tabela
-    raise NotImplementedError("Implemente criar_tabela()")
+    with conexao as cursor:
+        cursor.execute(f"DROP TABLE IF EXISTS {nome_tabela}")
+        colunas_str = ", ".join(colunas)
+        cursor.execute(f"CREATE TABLE {nome_tabela} ({colunas_str})")
 
 
 def inserir_linhas(conexao: sqlite3.Connection, nome_tabela: str, colunas: list[str], linhas: list[dict]) -> None:
-    """
-    Insere cada dicionário de `linhas` na tabela `nome_tabela`, um INSERT
-    por linha, sem converter ou alterar nenhum valor.
+    placeholders = ", ".join("?" for _ in colunas)
+    colunas_str = ", ".join(colunas)
+    sql = f"INSERT INTO {nome_tabela} ({colunas_str}) VALUES ({placeholders})"
 
-    Dica: monte a string SQL com "?" como placeholder para cada coluna
-    (ex.: "INSERT INTO tabela (a, b) VALUES (?, ?)") e passe os valores
-    via `conexao.execute(sql, valores)` -- nunca monte a string com os
-    VALORES direto (isso evita SQL injection, mesmo aqui sendo dados
-    controlados).
-    """
-    # TODO: implemente a inserção das linhas
-    raise NotImplementedError("Implemente inserir_linhas()")
+    with conexao:
+        for linha in linhas:
+            valores = [linha[coluna] for coluna in colunas]
+            conexao.execute(sql, valores)
 
 
 def main() -> None:
