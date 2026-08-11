@@ -1,59 +1,3 @@
-"""
-transformacao.py - Camada SILVER
-==================================
-
-OBJETIVO DESTA CAMADA
-----------------------
-Aqui você limpa e padroniza o que veio da bronze, aplicando regras de
-negócio claras (todas listadas em `lakehouse/silver/README.md`). O resultado deve
-ser um conjunto de dados CONFIÁVEL: tipos corretos, sem duplicatas, sem
-valores impossíveis, categorias padronizadas.
-
-Entrada:  lakehouse/bronze/saida/*.csv   (o que você gerou na camada anterior)
-Saída:    lakehouse/silver/saida/vendas_silver.csv
-          lakehouse/silver/saida/clientes_silver.csv
-          lakehouse/silver/saida/produtos_silver.csv
-
-Regras de limpeza (resumo -- leia lakehouse/silver/README.md para os detalhes):
-
-  clientes:
-    - id_cliente vira inteiro.
-    - email: tira espaços, deixa em minúsculo. Se não tiver "@", o
-      registro é DESCARTADO (e-mail impossível de corrigir).
-    - estado: tira espaços, deixa em MAIÚSCULO (sigla de 2 letras).
-    - Se houver id_cliente duplicado, mantenha o ÚLTIMO registro que
-      aparece no arquivo (é o mais recente).
-
-  produtos:
-    - id_produto vira inteiro, preco vira float (troque "," por "." antes
-      de converter).
-    - categoria: tire espaços e padronize a capitalização para bater
-      EXATAMENTE com uma das categorias válidas (veja CATEGORIAS_VALIDAS
-      no README). Dica: comparar em minúsculas e depois usar um
-      dicionário de "categoria em minúsculo -> categoria oficial".
-    - ativo: "sim" -> 1, "nao"/"não" -> 1 é ERRADO, "nao"/"não" -> 0,
-      "1" -> 1, "0" -> 0, vazio -> 0 (trate como inativo).
-    - Se houver id_produto duplicado, mantenha a PRIMEIRA ocorrência.
-
-  vendas:
-    - id_venda, id_cliente, id_produto viram inteiros.
-    - data_venda: pode vir como "AAAA-MM-DD" ou "DD/MM/AAAA" (às vezes com
-      espaços em volta) -> padronize sempre para "AAAA-MM-DD".
-    - quantidade: vira inteiro. Linhas com quantidade vazia, zero ou
-      negativa são DESCARTADAS (não fazem sentido no negócio).
-    - valor_total: vira float (troque "," por "."). Linhas com valor
-      vazio são DESCARTADAS.
-    - Linhas EXATAMENTE duplicadas (mesmo id_venda repetido) -> mantenha
-      só uma ocorrência.
-    - Linhas cujo id_cliente ou id_produto não existe mais em
-      clientes_silver / produtos_silver (porque foi descartado, ou porque
-      nunca existiu -- ex.: id_cliente 9999) -> DESCARTADAS.
-
-Dica de organização: processe clientes e produtos PRIMEIRO, guarde o
-conjunto de ids válidos, e só então processe vendas usando esses ids
-para o filtro de integridade referencial.
-"""
-
 import csv
 from pathlib import Path
 
@@ -80,6 +24,7 @@ def salvar_csv(registros: list[dict], caminho_saida: Path, colunas: list[str]) -
 
 
 def limpar_clientes(bronze: list[dict]) -> list[dict]:
+    #Aplica as regras de limpeza e retorna a lista de clientes.
     clientes: dict[int, dict] = {}
 
     for registro in bronze:
@@ -111,6 +56,7 @@ def limpar_clientes(bronze: list[dict]) -> list[dict]:
 
 
 def limpar_produtos(bronze: list[dict]) -> list[dict]:
+    #Aplica as regras de limpeza e retorna a lista de produtos.
     produtos: dict[int, dict] = {}
 
     for registro in bronze:
@@ -148,7 +94,9 @@ def limpar_produtos(bronze: list[dict]) -> list[dict]:
         produtos[id_produto] = produto_limpo
 
     return list(produtos.values())
+
 def limpar_vendas(bronze: list[dict], ids_clientes_validos: set[int], ids_produtos_validos: set[int]) -> list[dict]:
+    #Aplica as regras de limpeza e retorna a lista de vendas.
     vendas: dict[int, dict] = {}
 
     for registro in bronze:
