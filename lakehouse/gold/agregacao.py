@@ -98,9 +98,22 @@ def calcular_vendas_por_mes(vendas: list[dict]) -> list[dict]:
     return [{"mes": mes, "quantidade_vendas": info["quantidade_vendas"], "valor_total": info["valor_total"]} for mes, info in resumo.items()]
 
 def calcular_top_clientes(vendas: list[dict], clientes: list[dict], top_n: int = 10) -> list[dict]:
-    """Os top_n clientes que mais gastaram, ordenados do maior para o menor."""
-    # TODO: implemente
-    raise NotImplementedError("Implemente calcular_top_clientes()")
+    """Os top_n clientes que mais gastaram, ordenados do maior para o menor.
+      top_clientes.csv
+      colunas: id_cliente, nome, valor_total
+      -> os 10 clientes que mais gastaram (junte vendas com clientes),
+         ORDENADOS do maior para o menor valor_total."""
+    top_n = 10
+    resumo = defaultdict(float)
+    for venda in vendas:
+        id_cliente = venda["id_cliente"]
+        valor_total = float(venda["valor_total"])
+        resumo[id_cliente] += valor_total
+    return sorted( #usei ia nesse sort pq formatacao complexa, mas a ideia e simples
+        [{"id_cliente": id_cliente, "nome": next((c["nome"] for c in clientes if c["id_cliente"] == id_cliente), ""), "valor_total": valor_total} for id_cliente, valor_total in resumo.items()],
+        key=lambda x: x["valor_total"],
+        reverse=True
+    )[:top_n]
 
 
 def calcular_resumo_geral(vendas: list[dict]) -> list[dict]:
