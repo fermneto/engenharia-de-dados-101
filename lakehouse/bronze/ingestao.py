@@ -1,39 +1,3 @@
-"""
-ingestao.py - Camada BRONZE
-============================
-
-OBJETIVO DESTA CAMADA
-----------------------
-A camada bronze é a porta de entrada dos dados no seu pipeline. A regra de
-ouro aqui é: **não limpe, não corrija, não descarte nada**. Você só precisa:
-
-  1. Ler cada arquivo da pasta `lakehouse/landing/` (um .csv, um .json e um .txt),
-     cada um com seu próprio formato e suas próprias "sujeiras".
-  2. Transformar cada um em uma lista de dicionários (uma linha = um registro).
-  3. Acrescentar DUAS colunas de metadados de ingestão em cada registro:
-       - "arquivo_origem": o nome do arquivo de onde o registro veio
-       - "dt_ingestao": data/hora (ISO 8601) em que a ingestão foi executada
-  4. Salvar o resultado em `lakehouse/bronze/saida/`, um CSV por origem:
-       - lakehouse/bronze/saida/vendas_bronze.csv
-       - lakehouse/bronze/saida/clientes_bronze.csv
-       - lakehouse/bronze/saida/produtos_bronze.csv
-
-Ou seja: a bronze é uma cópia FIEL do que está na landing, só que já
-estruturada (todo mundo virou uma tabela) e com rastreabilidade (você sabe
-de onde e quando cada linha veio). Linhas duplicadas, valores vazios,
-datas em formatos diferentes, tudo isso continua exatamente como está.
-Isso é problema da camada silver, não da bronze!
-
-Depois de rodar este script, use `python lakehouse/bronze/verificar_bronze.py` para
-conferir se sua ingestão está correta.
-
-Dica sobre as bibliotecas padrão que você vai precisar:
-  - csv        -> para ler vendas.csv e escrever os arquivos de saída
-  - json       -> para ler clientes.json
-  - datetime   -> para gerar o timestamp de ingestão
-  - pathlib    -> para lidar com caminhos de arquivo
-"""
-
 import csv
 import json
 from datetime import datetime, timezone
@@ -42,12 +6,11 @@ from pathlib import Path
 LAKEHOUSE = Path(__file__).parent.parent
 LANDING = LAKEHOUSE / "landing"
 SAIDA = Path(__file__).parent / "saida"
-
-# Use o mesmo timestamp para todos os registros de uma mesma execução.
 DT_INGESTAO = datetime.now(timezone.utc).isoformat()
 
 
 def ler_vendas_csv() -> list[dict]:
+    #Lê o arquivo CSV de vendas e retorna uma lista de dicionários, onde cada dicionário representa uma linha do arquivo.
     try:
         with open(LANDING / "vendas.csv", "r", encoding="utf-8") as arquivo:
             leitor = csv.DictReader(arquivo)
@@ -57,6 +20,7 @@ def ler_vendas_csv() -> list[dict]:
 
 
 def ler_clientes_json() -> list[dict]:
+    #Lê o arquivo JSON de clientes e retorna uma lista de dicionários, onde cada dicionário representa um cliente.
     try:
         with open(LANDING / "clientes.json", "r", encoding = "utf-8") as arquivo:
             return json.load(arquivo)
@@ -65,6 +29,7 @@ def ler_clientes_json() -> list[dict]:
 
 
 def ler_produtos_txt() -> list[dict]:
+    #Lê o arquivo de texto de produtos e retorna uma lista de dicionários, onde cada dicionário representa um produto.
     try:
         with open(LANDING / "produtos.txt", "r", encoding="utf-8") as arquivo:
             cabecalho = None
@@ -135,7 +100,6 @@ def main() -> None:
     print(f"clientes_bronze.csv: {len(clientes)} linhas")
     print(f"produtos_bronze.csv: {len(produtos)} linhas")
     print("\nAgora rode: python lakehouse/bronze/verificar_bronze.py")
-
 
 if __name__ == "__main__":
     main()
