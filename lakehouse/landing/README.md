@@ -17,9 +17,13 @@ leia esses três arquivos e monte a camada bronze.
 
 Dê uma olhada nos arquivos com um editor de texto antes de começar a
 programar. Tente responder, só olhando:
+  //respondido
   - `vendas.csv`: as datas estão todas no mesmo formato? Todo valor está
-    preenchido?
+    preenchido? Todas aparentam ter data, mas em ordenamento diferente, 
+    espaçamentos diferentes e separação divergente.
   - `clientes.json`: todo registro tem as mesmas chaves? Os e-mails têm
-    todos um formato razoável?
+    todos um formato razoável? Alguns clientes possuem dados a mais ou a
+    menos. Emails razoaveis, porem tem um em caps.
   - `produtos.txt`: quantas colunas cada linha tem? Existem linhas que
-    não são dados (comentários, linhas em branco)?
+    não são dados (comentários, linhas em branco)? 5. A formatação diverge
+    entre as linhas. "1" e "sim" sao usados para mesma finalidade.
