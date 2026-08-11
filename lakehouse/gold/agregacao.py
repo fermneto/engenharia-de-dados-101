@@ -117,9 +117,10 @@ def calcular_top_clientes(vendas: list[dict], clientes: list[dict], top_n: int =
 
 
 def calcular_resumo_geral(vendas: list[dict]) -> list[dict]:
-    """Uma única linha: total_vendas, valor_total_geral, ticket_medio."""
-    # TODO: implemente
-    raise NotImplementedError("Implemente calcular_resumo_geral()")
+    total_vendas = len(vendas)
+    valor_total_geral = sum(float(venda["valor_total"]) for venda in vendas)
+    ticket_medio = round(valor_total_geral / total_vendas, 2) if total_vendas > 0 else 0.0
+    return [{"total_vendas": total_vendas, "valor_total_geral": valor_total_geral, "ticket_medio": ticket_medio}]
 
 
 def main() -> None:
